@@ -9,8 +9,10 @@ const Navbar = () => {
 
   useEffect(() => {
     if (darkMode) {
+      document.documentElement.style.backgroundColor = "#111827";
       document.documentElement.classList.add("dark");
     } else {
+      document.documentElement.style.backgroundColor = "#ffffff";
       document.documentElement.classList.remove("dark");
     }
   }, [darkMode]);
@@ -18,49 +20,155 @@ const Navbar = () => {
   const toggleDarkMode = () => setDarkMode(!darkMode);
   const toggleMenu = () => setMenuOpen(!menuOpen);
 
+  const linkStyle = {
+    textDecoration: "none",
+    color: darkMode ? "#d1d5db" : "#374151",
+    fontWeight: 500,
+    transition: "color 0.3s",
+  };
+
+  const hoverStyle = {
+    color: darkMode ? "#60a5fa" : "#2563eb",
+  };
+
+  const navLinks = [
+    { to: "/", label: "Home" },
+    { to: "/journal", label: "Journal" },
+    { to: "/report", label: "Report" },
+    { to: "/quiet", label: "Quiet Finder" },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-md transition-colors">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-        <div className="flex items-center space-x-3">
-          <img src={logo} alt="NoiseMap Logo" className="h-10 w-10 rounded-full" />
-          <span className="text-2xl font-bold text-gray-800 dark:text-white tracking-tight">NoiseMap</span>
+    <header
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        backgroundColor: darkMode ? "rgba(17,24,39,0.8)" : "rgba(255,255,255,0.8)",
+        backdropFilter: "blur(8px)",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+      }}
+    >
+      <nav
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          padding: "12px 24px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        {/* Logo + Title */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <img
+            src={logo}
+            alt="NoiseMap Logo"
+            style={{ height: "40px", width: "40px", borderRadius: "50%" }}
+          />
+          <span
+            style={{
+              fontSize: "24px",
+              fontWeight: "bold",
+              color: darkMode ? "#ffffff" : "#1f2937",
+            }}
+          >
+            NoiseMap
+          </span>
         </div>
 
-        {/* Desktop Links */}
-        <ul className="hidden md:flex space-x-6 font-medium text-gray-700 dark:text-gray-300">
-          <li><Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400">Home</Link></li>
-          <li><Link to="/journal" className="hover:text-blue-600 dark:hover:text-blue-400">Journal</Link></li>
-          <li><Link to="/report" className="hover:text-blue-600 dark:hover:text-blue-400">Report</Link></li>
-          <li><Link to="/quiet" className="hover:text-blue-600 dark:hover:text-blue-400">Quiet Finder</Link></li>
-          <li><button className="hover:text-blue-600 dark:hover:text-blue-400">Login</button></li>
+        {/* Desktop Nav */}
+        <ul
+          style={{
+            display: "none",
+            gap: "24px",
+            listStyle: "none",
+            margin: 0,
+            padding: 0,
+          }}
+          className="nav-links"
+        >
+          {navLinks.map((link) => (
+            <li key={link.to}>
+              <Link
+                to={link.to}
+                style={linkStyle}
+                onMouseOver={(e) => (e.currentTarget.style.color = hoverStyle.color)}
+                onMouseOut={(e) => (e.currentTarget.style.color = linkStyle.color)}
+              >
+                {link.label}
+              </Link>
+            </li>
+          ))}
+          <li>
+            <button
+              style={{
+                ...linkStyle,
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.color = hoverStyle.color)}
+              onMouseOut={(e) => (e.currentTarget.style.color = linkStyle.color)}
+            >
+              Login
+            </button>
+          </li>
         </ul>
 
-        {/* Controls */}
-        <div className="flex items-center space-x-4 md:hidden">
-          <button onClick={toggleDarkMode}>
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+        {/* Mobile & Dark Toggle */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <button
+            onClick={toggleDarkMode}
+            style={{ background: "none", border: "none", cursor: "pointer" }}
+          >
+            {darkMode ? <Sun size={20} color={linkStyle.color} /> : <Moon size={20} color={linkStyle.color} />}
           </button>
-          <button onClick={toggleMenu}>
-            {menuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
 
-        {/* Dark mode toggle on desktop */}
-        <div className="hidden md:flex items-center space-x-4">
-          <button onClick={toggleDarkMode} className="text-gray-700 dark:text-gray-300">
-            {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
+          {/* Mobile Menu Toggle */}
+          <div className="menu-icon" style={{ display: "block", cursor: "pointer" }} onClick={toggleMenu}>
+            {menuOpen ? <X size={24} color={linkStyle.color} /> : <Menu size={24} color={linkStyle.color} />}
+          </div>
         </div>
       </nav>
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white dark:bg-gray-900 px-6 py-4 space-y-3 shadow-md">
-          <Link to="/" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200">Home</Link>
-          <Link to="/journal" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200">Journal</Link>
-          <Link to="/report" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200">Report</Link>
-          <Link to="/quiet" onClick={toggleMenu} className="block text-gray-800 dark:text-gray-200">Quiet Finder</Link>
-          <button className="block text-gray-800 dark:text-gray-200">Login</button>
+        <div
+          style={{
+            padding: "16px 24px",
+            backgroundColor: darkMode ? "#111827" : "#ffffff",
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          }}
+        >
+          {navLinks.map((link) => (
+            <Link
+              key={link.to}
+              to={link.to}
+              onClick={toggleMenu}
+              style={{
+                ...linkStyle,
+                color: darkMode ? "#f9fafb" : "#111827",
+              }}
+            >
+              {link.label}
+            </Link>
+          ))}
+          <button
+            onClick={toggleMenu}
+            style={{
+              ...linkStyle,
+              background: "none",
+              border: "none",
+              textAlign: "left",
+              color: darkMode ? "#f9fafb" : "#111827",
+            }}
+          >
+            Login
+          </button>
         </div>
       )}
     </header>
