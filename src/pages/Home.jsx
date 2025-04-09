@@ -4,7 +4,7 @@ import NoiseMap from "../components/NoiseMap";
 import ForecastChart from "../components/ForecastChart";
 import AlertBanner from "../components/AlertBanner";
 import QuietFinder from "../components/QuietFinder";
-import Footer from "../components/Footer";
+import Footer from "../components/footer";
 import Navbar from "../components/Navbar"; // ✅ import your component-based navbar
 
 const Home = () => {

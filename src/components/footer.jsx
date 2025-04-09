@@ -58,7 +58,7 @@ const Footer = () => {
           }}
         >
           <a
-            href="https://github.com"
+            href="https://github.com/Ayush-silicon/NoiZDT"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: "#d1d5db", transition: "color 0.2s" }}
@@ -69,7 +69,7 @@ const Footer = () => {
           </a>
 
           <a
-            href="https://twitter.com"
+            href="https://x.com/"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: "#d1d5db", transition: "color 0.2s" }}
