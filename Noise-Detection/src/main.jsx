@@ -11,14 +11,11 @@
 //   </Provider>,
 //   document.getElementById('root')
 // );
+// src/index.jsx or main.jsx
 import React from 'react';
-import { createRoot } from 'react-dom/client'; // Import createRoot
+import { createRoot } from 'react-dom/client';
 import App from './App';
-import './styles/index.css';
+import './index.css';
 
-// Get the root element
-const rootElement = document.getElementById('root');
-// Create a root
-const root = createRoot(rootElement);
-// Render the app
+const root = createRoot(document.getElementById("root"));
 root.render(<App />);
