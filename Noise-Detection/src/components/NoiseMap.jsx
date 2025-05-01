@@ -28,6 +28,8 @@ const NoiseMap = () => {
 
   const saveToken = () => {
     localStorage.setItem('mapbox_token', mapboxToken);
+    // Reset mapInitialized to allow re-initialization
+    setMapInitialized(false);
     initializeMap();
     toast({
       title: "Token saved",
@@ -36,10 +38,15 @@ const NoiseMap = () => {
   };
 
   const initializeMap = () => {
-    if (mapboxToken && !mapInitialized) {
+    if (!mapboxToken || mapInitialized) return;
+    
+    try {
       mapboxgl.accessToken = mapboxToken;
       
-      if (map.current) return;
+      if (map.current) {
+        map.current.remove();
+      }
+
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
@@ -153,6 +160,15 @@ const NoiseMap = () => {
 
         setMapInitialized(true);
       });
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      toast({
+        title: "Map Error",
+        description: "Failed to initialize the map. Please check your Mapbox token.",
+        variant: "destructive"
+      });
+      // Reset initialization state to allow retrying
+      setMapInitialized(false);
     }
   };
 
@@ -210,8 +226,8 @@ const NoiseMap = () => {
   };
 
   useEffect(() => {
-    // Initialize map if token exists
-    if (mapboxToken) {
+    // Initialize map if token exists and map isn't initialized
+    if (mapboxToken && !mapInitialized) {
       initializeMap();
     }
     
@@ -220,7 +236,7 @@ const NoiseMap = () => {
         map.current.remove();
       }
     };
-  }, []);
+  }, [mapboxToken, mapInitialized]); // Add dependencies
 
   const getNoiseLevelIcon = () => {
     if (!noiseLevel) return <Volume className="h-5 w-5" />;
