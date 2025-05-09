@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Map, BookOpen, BarChart2, Settings, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ReportForm from '@/components/ReportForm';
@@ -9,6 +9,32 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showReportForm, setShowReportForm] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const navigate = useNavigate();
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const [isLoggedIn, setIsLoggedIn] = useState(!!token);
+  const [username, setUsername] = useState('');
+
+  React.useEffect(() => {
+    if (token) {
+      // Optionally decode token to get username
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        setUsername(payload.username || 'User');
+      } catch {
+        setUsername('User');
+      }
+    } else {
+      setUsername('');
+    }
+    setIsLoggedIn(!!token);
+  }, [token]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setUsername('');
+    navigate('/');
+  };
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -48,15 +74,14 @@ const Navbar = () => {
                 <MapPin className="w-4 h-4 mr-1" />
                 Quiet Spots
               </Link>
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-4"
-                onClick={() => setShowSettings(true)}
-              >
-                <Settings className="w-4 h-4 mr-1" />
-                Settings
-              </Button>
+              {isLoggedIn ? (
+                <>
+                  <span className="flex items-center px-3 py-2 text-sm font-medium text-gray-700">Welcome, {username}</span>
+                  <button onClick={handleLogout} className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-noise-600 focus:outline-none">Logout</button>
+                </>
+              ) : (
+                <Link to="/login" className="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:text-noise-600">Sign In</Link>
+              )}
               <Button
                 className="ml-2 bg-noise-500 hover:bg-noise-600"
                 size="sm"
@@ -126,30 +151,14 @@ const Navbar = () => {
                   Quiet Spots
                 </div>
               </Link>
-            </div>
-            <div className="pt-4 pb-3 border-t border-gray-100">
-              <div className="flex items-center px-5 space-x-2">
-                <Button
-                  className="w-full bg-noise-500 hover:bg-noise-600"
-                  onClick={() => {
-                    setShowReportForm(true);
-                    setIsOpen(false);
-                  }}
-                >
-                  Report Noise
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setShowSettings(true);
-                    setIsOpen(false);
-                  }}
-                >
-                  <Settings className="w-4 h-4 mr-1" />
-                  Settings
-                </Button>
-              </div>
+              {isLoggedIn ? (
+                <>
+                  <span className="block px-3 py-2 rounded-md text-base font-medium text-gray-700">Welcome, {username}</span>
+                  <button onClick={() => { handleLogout(); toggleMenu(); }} className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-noise-600 focus:outline-none">Logout</button>
+                </>
+              ) : (
+                <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-noise-600 hover:bg-gray-50" onClick={toggleMenu}>Sign In</Link>
+              )}
             </div>
           </div>
         )}

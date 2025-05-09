@@ -4,7 +4,10 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { AlertTriangle, Volume1, Volume2, Volume, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import { io } from 'socket.io-client';
 
+// Get Mapbox token from environment variables
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
 
 const sampleNoiseData = [
   { id: 1, lat: 40.7128, lng: -74.006, level: 85, source: 'Traffic', timestamp: new Date().toISOString() },
@@ -13,13 +16,20 @@ const sampleNoiseData = [
   { id: 4, lat: 40.7098, lng: -74.016, level: 75, source: 'Restaurant', timestamp: new Date().toISOString() },
 ];
 
+const socket = io('http://localhost:3000');
+
+socket.on('noise-update', (data) => {
+  // Update your map or UI with new noise data
+});
+
 const NoiseMap = () => {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [mapboxToken, setMapboxToken] = useState(localStorage.getItem('mapbox_token') || '');
+  const [mapboxToken, setMapboxToken] = useState(MAPBOX_TOKEN || localStorage.getItem('mapbox_token') || '');
   const [isRecording, setIsRecording] = useState(false);
   const [noiseLevel, setNoiseLevel] = useState(null);
   const [mapInitialized, setMapInitialized] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
   
   // Handle token input
   const handleTokenChange = (e) => {
@@ -28,7 +38,6 @@ const NoiseMap = () => {
 
   const saveToken = () => {
     localStorage.setItem('mapbox_token', mapboxToken);
-    // Reset mapInitialized to allow re-initialization
     setMapInitialized(false);
     initializeMap();
     toast({
@@ -47,22 +56,39 @@ const NoiseMap = () => {
         map.current.remove();
       }
 
+      // Default to NYC coordinates if user location is not available
+      const defaultCenter = userLocation ? [userLocation.lng, userLocation.lat] : [-74.006, 40.7128];
+
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [-74.006, 40.7128], // NYC default
+        center: defaultCenter,
         zoom: 12,
         pitch: 30,
       });
 
+      // Add navigation controls
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-      map.current.addControl(new mapboxgl.GeolocateControl({
+      
+      // Add geolocation control
+      const geolocate = new mapboxgl.GeolocateControl({
         positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: true
-      }));
+        trackUserLocation: true,
+        showUserLocation: true
+      });
+      
+      map.current.addControl(geolocate);
+
+      // Handle geolocation
+      geolocate.on('geolocate', (e) => {
+        setUserLocation({
+          lat: e.coords.latitude,
+          lng: e.coords.longitude
+        });
+      });
 
       map.current.on('load', () => {
-        // Add heatmap layer for noise intensity
+        // Add heatmap layer for noise intensity     
         map.current.addSource('noise-data', {
           type: 'geojson',
           data: {
@@ -173,7 +199,7 @@ const NoiseMap = () => {
   };
 
   // Simulate recording noise with microphone
-  const toggleRecording = () => {
+  const toggleRecording = async () => {
     if (isRecording) {
       // Simulate stopping the recording
       setIsRecording(false);
@@ -195,9 +221,12 @@ const NoiseMap = () => {
       setNoiseLevel(null);
       
       // Simulate a recording process
-      setTimeout(() => {
+      setTimeout(async () => {
         if (isRecording) {
-          toggleRecording();
+          const result = await recordNoise(simulatedLevel, userLocation, 'Simulated');
+          if (result) {
+            toggleRecording();
+          }
         }
       }, 3000);
     }
@@ -223,6 +252,40 @@ const NoiseMap = () => {
     if (level < 65) return 'Moderate noise level, comparable to normal conversation';
     if (level < 80) return 'High noise level, could cause stress over time';
     return 'Extreme noise level, potential hearing damage with prolonged exposure';
+  };
+
+  const recordNoise = async (level, location, source) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:3000/api/noise/record', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          level,
+          location,
+          source
+        })
+      });
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error recording noise:', error);
+    }
+  };
+
+  const fetchAreaNoiseData = async (lat, lng, radius) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/noise/area?lat=${lat}&lng=${lng}&radius=${radius}`
+      );
+      const data = await response.json();
+      // Update your map with the noise data
+    } catch (error) {
+      console.error('Error fetching noise data:', error);
+    }
   };
 
   useEffect(() => {

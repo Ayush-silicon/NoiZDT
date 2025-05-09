@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import Navbar from "@/components/Navbar";
+import Footer from '@/components/Footer';
 
 const Home = () => {
   const [showAlert, setShowAlert] = useState(true);
@@ -27,9 +28,11 @@ const Home = () => {
   return (
     <div className="relative min-h-screen flex flex-col">
       <Navbar />
-      <div className="pt-14 flex-grow">
+      <div className="pt-14 flex-grow h-[calc(100vh-3.5rem)]">
         {/* Map */}
-        <NoiseMap />
+        <div className="w-full h-full">
+          <NoiseMap />
+        </div>
       </div>
       
       {/* Floating Action Button */}
@@ -97,6 +100,7 @@ const Home = () => {
       
       {/* Report Form Modal */}
       <ReportForm isOpen={showReportForm} onClose={handleCloseReportForm} />
+      <Footer />
     </div>
   );
 };
